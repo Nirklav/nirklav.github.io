@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["error","TaskQueue error."],["spawn_policy","Trait that controls the number of threads."]],"struct":[["Task",""],["TaskQueue",""]]});

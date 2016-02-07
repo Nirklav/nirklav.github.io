@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["StaticSpawnPolicy",""]],"trait":[["SpawnPolicy",""]]});
