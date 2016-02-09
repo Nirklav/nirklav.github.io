@@ -46,7 +46,7 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-149' class='srclink' href='../src/task_queue/lib.rs.html#62-71' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-198' class='srclink' href='../src/task_queue/lib.rs.html#63-72' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct TaskQueue {
     // some fields omitted
 }</pre><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../task_queue/struct.TaskQueue.html' title='task_queue::TaskQueue'>TaskQueue</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>() -&gt; <a class='struct' href='../task_queue/struct.TaskQueue.html' title='task_queue::TaskQueue'>TaskQueue</a></code></h4>
@@ -55,8 +55,11 @@
 <div class='docblock'><p>Create new task quque with selected threads count</p>
 </div><h4 id='method.enqueue' class='method'><code>fn <a href='#method.enqueue' class='fnname'>enqueue</a>&lt;F&gt;(&amp;mut self, f: F) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>, <a class='enum' href='../task_queue/error/enum.TaskQueueError.html' title='task_queue::error::TaskQueueError'>TaskQueueError</a>&gt; <span class='where'>where F: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Fn.html' title='core::ops::Fn'>Fn</a>() + <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Send.html' title='core::marker::Send'>Send</a> + 'static</span></code></h4>
 <div class='docblock'><p>Schedule task in queue</p>
-</div><h4 id='method.stop' class='method'><code>fn <a href='#method.stop' class='fnname'>stop</a>(self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='struct' href='../task_queue/struct.Task.html' title='task_queue::Task'>Task</a>&gt;, <a class='enum' href='../task_queue/error/enum.TaskQueueError.html' title='task_queue::error::TaskQueueError'>TaskQueueError</a>&gt;</code></h4>
-<div class='docblock'><p>Stops tasks queue work and return are not completed tasks</p>
+</div><h4 id='method.stop' class='method'><code>fn <a href='#method.stop' class='fnname'>stop</a>(self) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/std/thread/struct.JoinHandle.html' title='std::thread::JoinHandle'>JoinHandle</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;&gt;</code></h4>
+<div class='docblock'><p>Stops tasks queue work.
+All task in queue will be completed by threads.</p>
+</div><h4 id='method.stop_immediately' class='method'><code>fn <a href='#method.stop_immediately' class='fnname'>stop_immediately</a>(self) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='struct' href='../task_queue/struct.Task.html' title='task_queue::Task'>Task</a>&gt;, <a class='enum' href='../task_queue/error/enum.TaskQueueError.html' title='task_queue::error::TaskQueueError'>TaskQueueError</a>&gt;</code></h4>
+<div class='docblock'><p>Stops tasks queue work immediately and return are not completed tasks</p>
 </div><h4 id='method.get_threads_count' class='method'><code>fn <a href='#method.get_threads_count' class='fnname'>get_threads_count</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
 <div class='docblock'><p>Returns current threads count</p>
 </div><h4 id='method.get_max_threads' class='method'><code>fn <a href='#method.get_max_threads' class='fnname'>get_max_threads</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
@@ -67,7 +70,8 @@
 <div class='docblock'><p>Sets a policy for controlling the amount of threads</p>
 </div><h4 id='method.tasks_count' class='method'><code>fn <a href='#method.tasks_count' class='fnname'>tasks_count</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
 <div class='docblock'><p>Gets tasks count in queue</p>
-</div></div></section>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Drop.html' title='core::ops::Drop'>Drop</a> for <a class='struct' href='../task_queue/struct.TaskQueue.html' title='task_queue::TaskQueue'>TaskQueue</a></code></h3><div class='impl-items'><h4 id='method.drop' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Drop.html#method.drop' class='fnname'>drop</a>(&amp;mut self)</code></h4>
+</div></section>
     <section id='search' class="content hidden"></section>
 
     <section class="footer"></section>

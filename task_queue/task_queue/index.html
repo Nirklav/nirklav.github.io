@@ -46,7 +46,7 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-0' class='srclink' href='../src/task_queue/lib.rs.html#1-222' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-0' class='srclink' href='../src/task_queue/lib.rs.html#1-253' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'><p>Task queue
 The implementation of the thread pool for Rust.</p>
 
@@ -67,7 +67,7 @@ The implementation of the thread pool for Rust.</p>
    }).<span class='ident'>unwrap</span>();
 }
 
-<span class='kw'>let</span> <span class='ident'>not_executed_tasks</span> <span class='op'>=</span> <span class='ident'>queue</span>.<span class='ident'>stop</span>().<span class='ident'>unwrap</span>();
+<span class='kw'>let</span> <span class='ident'>not_executed_tasks</span> <span class='op'>=</span> <span class='ident'>queue</span>.<span class='ident'>stop_immediately</span>().<span class='ident'>unwrap</span>();
 <span class='kw'>for</span> <span class='ident'>t</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='ident'>not_executed_tasks</span> {
     <span class='ident'>t</span>.<span class='ident'>run</span>();
 }</pre>
