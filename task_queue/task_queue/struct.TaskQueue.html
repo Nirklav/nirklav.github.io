@@ -54,19 +54,19 @@
 </div><h4 id='method.with_threads' class='method'><code>fn <a href='#method.with_threads' class='fnname'>with_threads</a>(min: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, max: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>) -&gt; <a class='struct' href='../task_queue/struct.TaskQueue.html' title='task_queue::TaskQueue'>TaskQueue</a></code></h4>
 <div class='docblock'><p>Create new task quque with selected threads count</p>
 </div><h4 id='method.enqueue' class='method'><code>fn <a href='#method.enqueue' class='fnname'>enqueue</a>&lt;F&gt;(&amp;mut self, f: F) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>, <a class='enum' href='../task_queue/error/enum.TaskQueueError.html' title='task_queue::error::TaskQueueError'>TaskQueueError</a>&gt; <span class='where'>where F: <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Fn.html' title='core::ops::Fn'>Fn</a>() + <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Send.html' title='core::marker::Send'>Send</a> + 'static</span></code></h4>
-<div class='docblock'><p>Schedule task in queue
-``` rust
-extern crate task_queue;</p>
+<div class='docblock'><p>Schedule task in queue</p>
 
-<p>let mut queue = task_queue::TaskQueue::new();</p>
+<h1 id='example' class='section-header'><a href='#example'>Example</a></h1><pre class='rust rust-example-rendered'>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>task_queue</span>;
 
-<p>for _ in 0..10 {
-   queue.enqueue(move || {
-       println!(&quot;Hi from pool&quot;)
-   }).unwrap();
-}</p>
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>queue</span> <span class='op'>=</span> <span class='ident'>task_queue</span>::<span class='ident'>TaskQueue</span>::<span class='ident'>new</span>();
 
-<h1 id='queuestop_wait' class='section-header'><a href='#queuestop_wait'>queue.stop_wait();</a></h1></div><h4 id='method.stop' class='method'><code>fn <a href='#method.stop' class='fnname'>stop</a>(self) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/std/thread/struct.JoinHandle.html' title='std::thread::JoinHandle'>JoinHandle</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;&gt;</code></h4>
+<span class='kw'>for</span> _ <span class='kw'>in</span> <span class='number'>0</span>..<span class='number'>10</span> {
+   <span class='ident'>queue</span>.<span class='ident'>enqueue</span>(<span class='kw'>move</span> <span class='op'>||</span> {
+       <span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;Hi from pool&quot;</span>)
+   }).<span class='ident'>unwrap</span>();
+}</pre>
+</div><h4 id='method.stop' class='method'><code>fn <a href='#method.stop' class='fnname'>stop</a>(self) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;<a class='struct' href='https://doc.rust-lang.org/nightly/std/thread/struct.JoinHandle.html' title='std::thread::JoinHandle'>JoinHandle</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>()</a>&gt;&gt;</code></h4>
 <div class='docblock'><p>Stops tasks queue work.
 All task in queue will be completed by threads.
 Method not block current thread work, but returns threads joinHandles.</p>
