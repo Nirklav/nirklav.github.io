@@ -294,6 +294,65 @@
 <span id="251">251</span>
 <span id="252">252</span>
 <span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Task queue</span>
 <span class='doccomment'>//! The implementation of the thread pool for Rust.</span>
@@ -302,24 +361,14 @@
 <span class='doccomment'>//! ``` rust</span>
 <span class='doccomment'>//! extern crate task_queue;</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! use std::sync::{ Arc, Mutex };</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! let data = Arc::new(Mutex::new(0));</span>
 <span class='doccomment'>//! let mut queue = task_queue::TaskQueue::new();</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! for _ in 0..1000 {</span>
-<span class='doccomment'>//!    let clone = data.clone();</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//!    queue.enqueue(move || {</span>
-<span class='doccomment'>//!        let mut guard = clone.lock().unwrap();</span>
-<span class='doccomment'>//!        *guard += 1;</span>
+<span class='doccomment'>//! for _ in 0..10 {</span>
+<span class='doccomment'>//!    queue.enqueue(|| {</span>
+<span class='doccomment'>//!        println!(&quot;Hi from pool&quot;)</span>
 <span class='doccomment'>//!    }).unwrap();</span>
 <span class='doccomment'>//! }</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! let not_executed_tasks = queue.stop_immediately().unwrap();</span>
-<span class='doccomment'>//! for t in &amp;not_executed_tasks {</span>
-<span class='doccomment'>//!     t.run();</span>
-<span class='doccomment'>//! }</span>
+<span class='doccomment'>//! # queue.stop_wait();</span>
 <span class='doccomment'>//! ```</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! Library supports dynamic control over the number of threads.</span>
@@ -387,6 +436,18 @@
     }
 
     <span class='doccomment'>/// Schedule task in queue</span>
+    <span class='doccomment'>/// ``` rust</span>
+    <span class='doccomment'>/// extern crate task_queue;</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// let mut queue = task_queue::TaskQueue::new();</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// for _ in 0..10 {</span>
+    <span class='doccomment'>///    queue.enqueue(move || {</span>
+    <span class='doccomment'>///        println!(&quot;Hi from pool&quot;)</span>
+    <span class='doccomment'>///    }).unwrap();</span>
+    <span class='doccomment'>/// }</span>
+    <span class='doccomment'>/// # queue.stop_wait();</span>
+    <span class='doccomment'>/// ```</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>enqueue</span><span class='op'>&lt;</span><span class='ident'>F</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>f</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>TaskQueueError</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>F</span>: <span class='ident'>Fn</span>() <span class='op'>+</span> <span class='ident'>Send</span> <span class='op'>+</span> <span class='lifetime'>&#39;static</span>, {
         <span class='kw'>let</span> <span class='ident'>task</span> <span class='op'>=</span> <span class='ident'>Task</span> { <span class='ident'>value</span>: <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>f</span>) };
         <span class='self'>self</span>.<span class='ident'>sender</span>.<span class='ident'>put</span>(<span class='ident'>Message</span>::<span class='ident'>Task</span>(<span class='ident'>task</span>));
@@ -440,8 +501,50 @@
 
     <span class='doccomment'>/// Stops tasks queue work.</span>
     <span class='doccomment'>/// All task in queue will be completed by threads.</span>
+    <span class='doccomment'>/// Method not block current thread work, but returns threads joinHandles.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// # Examples</span>
+    <span class='doccomment'>/// ``` rust</span>
+    <span class='doccomment'>/// extern crate task_queue;</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// let mut queue = task_queue::TaskQueue::new();</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// for _ in 0..10 {</span>
+    <span class='doccomment'>///    queue.enqueue(move || {</span>
+    <span class='doccomment'>///        println!(&quot;Hi from pool&quot;)</span>
+    <span class='doccomment'>///    }).unwrap();</span>
+    <span class='doccomment'>/// }</span>
+    <span class='doccomment'>/// let handles = queue.stop();</span>
+    <span class='doccomment'>/// for h in handles {</span>
+    <span class='doccomment'>///     h.join().unwrap();</span>
+    <span class='doccomment'>/// }</span>
+    <span class='doccomment'>/// ```</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>stop</span>(<span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>JoinHandle</span><span class='op'>&lt;</span>()<span class='op'>&gt;&gt;</span> {
         <span class='self'>self</span>.<span class='ident'>stop_impl</span>()
+    }
+
+    <span class='doccomment'>/// Stops tasks queue work.</span>
+    <span class='doccomment'>/// All task in queue will be completed by threads.</span>
+    <span class='doccomment'>/// Method block current thread work.</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// # Examples</span>
+    <span class='doccomment'>/// ``` rust</span>
+    <span class='doccomment'>/// extern crate task_queue;</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// let mut queue = task_queue::TaskQueue::new();</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// for _ in 0..10 {</span>
+    <span class='doccomment'>///    queue.enqueue(move || {</span>
+    <span class='doccomment'>///        println!(&quot;Hi from pool&quot;)</span>
+    <span class='doccomment'>///    }).unwrap();</span>
+    <span class='doccomment'>/// }</span>
+    <span class='doccomment'>/// queue.stop_wait();</span>
+    <span class='doccomment'>/// ```</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>stop_wait</span>(<span class='kw-2'>mut</span> <span class='self'>self</span>) {
+        <span class='kw'>let</span> <span class='ident'>handles</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>stop_impl</span>();
+        <span class='kw'>for</span> <span class='ident'>h</span> <span class='kw'>in</span> <span class='ident'>handles</span> {
+            <span class='ident'>h</span>.<span class='ident'>join</span>().<span class='ident'>expect</span>(<span class='string'>&quot;Join error&quot;</span>);
+        }
     }
 
     <span class='kw'>fn</span> <span class='ident'>stop_impl</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>JoinHandle</span><span class='op'>&lt;</span>()<span class='op'>&gt;&gt;</span> {
@@ -457,7 +560,24 @@
     }
 
     <span class='doccomment'>/// Stops tasks queue work immediately and return are not completed tasks</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>stop_immediately</span>(<span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Task</span><span class='op'>&gt;</span>, <span class='ident'>TaskQueueError</span><span class='op'>&gt;</span> {
+    <span class='doccomment'>/// Stops tasks queue work.</span>
+    <span class='doccomment'>/// # Examples</span>
+    <span class='doccomment'>/// ``` rust</span>
+    <span class='doccomment'>/// extern crate task_queue;</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// let mut queue = task_queue::TaskQueue::new();</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// for _ in 0..10 {</span>
+    <span class='doccomment'>///    queue.enqueue(move || {</span>
+    <span class='doccomment'>///        println!(&quot;Hi from pool&quot;)</span>
+    <span class='doccomment'>///    }).unwrap();</span>
+    <span class='doccomment'>/// }</span>
+    <span class='doccomment'>/// let not_completed = queue.stop_immediately();</span>
+    <span class='doccomment'>/// for t in &amp;not_completed {</span>
+    <span class='doccomment'>///     t.run();</span>
+    <span class='doccomment'>/// }</span>
+    <span class='doccomment'>/// ```</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>stop_immediately</span>(<span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Task</span><span class='op'>&gt;</span> {
         <span class='kw'>let</span> <span class='ident'>threads</span> : <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>ThreadInfo</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>threads</span>.<span class='ident'>drain</span>(..).<span class='ident'>collect</span>();
 
         <span class='comment'>// Close threads immediately</span>
@@ -467,9 +587,7 @@
 
         <span class='comment'>// Wait threads</span>
         <span class='kw'>for</span> <span class='ident'>info</span> <span class='kw'>in</span> <span class='ident'>threads</span> {
-            <span class='kw'>if</span> <span class='kw'>let</span> <span class='prelude-val'>Err</span>(_) <span class='op'>=</span> <span class='ident'>info</span>.<span class='ident'>handle</span>.<span class='ident'>join</span>() {
-                <span class='kw'>return</span> <span class='prelude-val'>Err</span>(<span class='ident'>TaskQueueError</span>::<span class='ident'>Join</span>);
-            }
+            <span class='ident'>info</span>.<span class='ident'>handle</span>.<span class='ident'>join</span>().<span class='ident'>expect</span>(<span class='string'>&quot;Join error&quot;</span>);
         }
 
         <span class='comment'>// Cancel all tasks, and check it</span>
@@ -484,7 +602,7 @@
             <span class='ident'>result</span>.<span class='ident'>push</span>(<span class='ident'>task</span>);
         }
 
-        <span class='prelude-val'>Ok</span>(<span class='ident'>result</span>)
+        <span class='ident'>result</span>
     }
 
     <span class='doccomment'>/// Returns current threads count</span>
