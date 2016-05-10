@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["StaticSpawnPolicy",""]],"trait":[["SpawnPolicy",""]]});
+initSidebarItems({"struct":[["DynamicSpawnPolicy","Policy that provide dynamic number of threads for queue. # Examples ``` rust extern crate task_queue;"],["StaticSpawnPolicy","Policy that provide max number of threads for queue. # Examples ``` rust extern crate task_queue;"]],"trait":[["SpawnPolicy",""]]});

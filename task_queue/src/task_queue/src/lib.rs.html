@@ -9,8 +9,8 @@
 
     <title>lib.rs.html -- source</title>
 
-    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
-    <link rel="stylesheet" type="text/css" href="../../main.css">
+    <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../../main.css">
 
     
     
@@ -354,6 +354,59 @@
 <span id="311">311</span>
 <span id="312">312</span>
 <span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Task queue</span>
 <span class='doccomment'>//! The implementation of the thread pool for Rust.</span>
@@ -378,14 +431,14 @@
 <span class='doccomment'>//! For example StaticSpawnPolicy implementation:</span>
 <span class='doccomment'>//! # Example</span>
 <span class='doccomment'>//! ```</span>
-<span class='doccomment'>//! use task_queue::TaskQueue;</span>
+<span class='doccomment'>//! use task_queue::TaskQueueStats;</span>
 <span class='doccomment'>//! use task_queue::spawn_policy::SpawnPolicy;</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! pub struct StaticSpawnPolicy;</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! impl SpawnPolicy for StaticSpawnPolicy {</span>
-<span class='doccomment'>//!     fn get_count(&amp;self, queue: &amp;TaskQueue) -&gt; usize {</span>
-<span class='doccomment'>//!         queue.get_max_threads()</span>
+<span class='doccomment'>//!     fn get_count(&amp;mut self, stats: TaskQueueStats) -&gt; usize {</span>
+<span class='doccomment'>//!         stats.threads_max</span>
 <span class='doccomment'>//!     }</span>
 <span class='doccomment'>//! }</span>
 <span class='doccomment'>//! #</span>
@@ -419,13 +472,31 @@
 }
 
 <span class='kw'>impl</span> <span class='ident'>TaskQueue</span> {
-    <span class='doccomment'>/// Create new task queue with 10 threads</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='ident'>TaskQueue</span> {
+    <span class='doccomment'>/// Create new task queue with 10 threads.</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='kw'>Self</span> {
         <span class='ident'>TaskQueue</span>::<span class='ident'>with_threads</span>(<span class='number'>10</span>, <span class='number'>10</span>)
     }
 
-    <span class='doccomment'>/// Create new task quque with selected threads count</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>with_threads</span>(<span class='ident'>min</span>: <span class='ident'>usize</span>, <span class='ident'>max</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='ident'>TaskQueue</span> {
+    <span class='doccomment'>/// Create new task quque with selected threads count.</span>
+    <span class='doccomment'>/// # Panics</span>
+    <span class='doccomment'>/// When min &lt;= 0</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// When max &lt;= 0</span>
+    <span class='doccomment'>///</span>
+    <span class='doccomment'>/// When max &lt; min</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>with_threads</span>(<span class='ident'>min</span>: <span class='ident'>usize</span>, <span class='ident'>max</span>: <span class='ident'>usize</span>) <span class='op'>-&gt;</span> <span class='kw'>Self</span> {
+        <span class='kw'>if</span> <span class='ident'>min</span> <span class='op'>&lt;=</span> <span class='number'>0</span> {
+            <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;min threads equals or less zero&quot;</span>);
+        }
+
+        <span class='kw'>if</span> <span class='ident'>max</span> <span class='op'>&lt;=</span> <span class='number'>0</span> {
+            <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;max threads equals or less zero&quot;</span>);
+        }
+
+        <span class='kw'>if</span> <span class='ident'>max</span> <span class='op'>&lt;</span> <span class='ident'>min</span> {
+            <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;max less than min&quot;</span>);
+        }
+
         <span class='ident'>TaskQueue</span> {
             <span class='ident'>sender</span>: <span class='ident'>Sender</span>::<span class='op'>&lt;</span><span class='ident'>Message</span><span class='op'>&gt;</span>::<span class='ident'>new</span>(),
             <span class='ident'>policy</span>: <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>StaticSpawnPolicy</span>::<span class='ident'>new</span>()),
@@ -450,27 +521,35 @@
     <span class='doccomment'>/// }</span>
     <span class='doccomment'>/// # queue.stop_wait();</span>
     <span class='doccomment'>/// ```</span>
+    <span class='doccomment'>/// # Panics</span>
+    <span class='doccomment'>/// If spawn policy returned illegal number of threads.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>enqueue</span><span class='op'>&lt;</span><span class='ident'>F</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>f</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>TaskQueueError</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>F</span>: <span class='ident'>Fn</span>() <span class='op'>+</span> <span class='ident'>Send</span> <span class='op'>+</span> <span class='lifetime'>&#39;static</span>, {
         <span class='kw'>let</span> <span class='ident'>task</span> <span class='op'>=</span> <span class='ident'>Task</span> { <span class='ident'>value</span>: <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>f</span>) };
         <span class='self'>self</span>.<span class='ident'>sender</span>.<span class='ident'>put</span>(<span class='ident'>Message</span>::<span class='ident'>Task</span>(<span class='ident'>task</span>));
 
-        <span class='kw'>let</span> <span class='ident'>count</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>policy</span>.<span class='ident'>get_count</span>(<span class='self'>self</span>);
+        <span class='kw'>let</span> <span class='ident'>stats</span> <span class='op'>=</span> <span class='ident'>TaskQueueStats</span>::<span class='ident'>new</span>(<span class='self'>self</span>);
+        <span class='kw'>let</span> <span class='ident'>count</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>policy</span>.<span class='ident'>get_count</span>(<span class='ident'>stats</span>);
+        <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>min_threads</span> <span class='op'>&gt;</span> <span class='ident'>count</span> <span class='op'>||</span> <span class='ident'>count</span> <span class='op'>&gt;</span> <span class='self'>self</span>.<span class='ident'>max_threads</span> {
+            <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;policy returned illegal number of threads min:{} max:{} count:{}&quot;</span>, <span class='self'>self</span>.<span class='ident'>min_threads</span>, <span class='self'>self</span>.<span class='ident'>max_threads</span>, <span class='ident'>count</span>);
+        }
+
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>runned</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>threads</span>.<span class='ident'>len</span>();
 
-        <span class='kw'>if</span> <span class='ident'>count</span> <span class='op'>&gt;</span> <span class='ident'>runned</span> {
-            <span class='kw'>for</span> _ <span class='kw'>in</span> <span class='ident'>runned</span>..<span class='ident'>count</span> {
-                <span class='kw'>let</span> <span class='ident'>info</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>build_and_run</span>());
-                <span class='self'>self</span>.<span class='ident'>threads</span>.<span class='ident'>push</span>(<span class='ident'>info</span>);
+        <span class='kw'>loop</span> {
+            <span class='kw'>if</span> <span class='ident'>runned</span> <span class='op'>==</span> <span class='ident'>count</span> {
+                <span class='kw'>break</span>;
             }
-        } <span class='kw'>else</span> {
-            <span class='kw'>loop</span> {
-                <span class='kw'>if</span> <span class='ident'>runned</span> <span class='op'>==</span> <span class='ident'>count</span> {
-                    <span class='kw'>break</span>;
-                }
 
+            <span class='kw'>if</span> <span class='ident'>runned</span> <span class='op'>&gt;</span> <span class='ident'>count</span> {
                 <span class='kw'>let</span> <span class='ident'>info</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>threads</span>.<span class='ident'>remove</span>(<span class='number'>0</span>);
                 <span class='self'>self</span>.<span class='ident'>sender</span>.<span class='ident'>put_with_priority</span>(<span class='prelude-val'>Some</span>(<span class='ident'>info</span>.<span class='ident'>reciver</span>), <span class='ident'>Priority</span>::<span class='ident'>High</span>, <span class='ident'>Message</span>::<span class='ident'>CloseThread</span>);
+
                 <span class='ident'>runned</span> <span class='op'>-=</span> <span class='number'>1</span>;
+            } <span class='kw'>else</span> {
+                <span class='kw'>let</span> <span class='ident'>info</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='self'>self</span>.<span class='ident'>build_and_run</span>());
+                <span class='self'>self</span>.<span class='ident'>threads</span>.<span class='ident'>push</span>(<span class='ident'>info</span>);
+
+                <span class='ident'>runned</span> <span class='op'>+=</span> <span class='number'>1</span>;
             }
         }
 
@@ -561,8 +640,7 @@
             .<span class='ident'>collect</span>()
     }
 
-    <span class='doccomment'>/// Stops tasks queue work immediately and return are not completed tasks</span>
-    <span class='doccomment'>/// Stops tasks queue work.</span>
+    <span class='doccomment'>/// Stops tasks queue work immediately and return are not completed tasks.</span>
     <span class='doccomment'>/// # Examples</span>
     <span class='doccomment'>/// ``` rust</span>
     <span class='doccomment'>/// extern crate task_queue;</span>
@@ -607,24 +685,24 @@
         <span class='ident'>result</span>
     }
 
+    <span class='doccomment'>/// Sets a policy for controlling the amount of threads</span>
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>set_spawn_policy</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>policy</span>: <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>SpawnPolicy</span><span class='op'>&gt;</span>) {
+        <span class='self'>self</span>.<span class='ident'>policy</span> <span class='op'>=</span> <span class='ident'>policy</span>;
+    }
+
     <span class='doccomment'>/// Returns current threads count</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_threads_count</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
         <span class='self'>self</span>.<span class='ident'>threads</span>.<span class='ident'>len</span>()
     }
 
     <span class='doccomment'>/// Return max threads count</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_max_threads</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_threads_max</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
         <span class='self'>self</span>.<span class='ident'>max_threads</span>
     }
 
     <span class='doccomment'>/// Return min threads count</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_min_threads</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>get_threads_min</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> {
         <span class='self'>self</span>.<span class='ident'>min_threads</span>
-    }
-
-    <span class='doccomment'>/// Sets a policy for controlling the amount of threads</span>
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>set_spawn_policy</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>policy</span>: <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>SpawnPolicy</span><span class='op'>&gt;</span>) {
-        <span class='self'>self</span>.<span class='ident'>policy</span> <span class='op'>=</span> <span class='ident'>policy</span>;
     }
 
     <span class='doccomment'>/// Gets tasks count in queue</span>
@@ -666,6 +744,34 @@
 <span class='kw'>impl</span> <span class='ident'>Task</span> {
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>run</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) {
         (<span class='self'>self</span>.<span class='ident'>value</span>)();
+    }
+}
+
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>, <span class='ident'>Copy</span>)]</span>
+<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>TaskQueueStats</span> {
+    <span class='kw'>pub</span> <span class='ident'>threads_count</span>: <span class='ident'>usize</span>,
+    <span class='kw'>pub</span> <span class='ident'>threads_max</span>: <span class='ident'>usize</span>,
+    <span class='kw'>pub</span> <span class='ident'>threads_min</span>: <span class='ident'>usize</span>,
+    <span class='kw'>pub</span> <span class='ident'>tasks_count</span>: <span class='ident'>usize</span>,
+}
+
+<span class='kw'>impl</span> <span class='ident'>TaskQueueStats</span> {
+    <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>queue</span>: <span class='kw-2'>&amp;</span><span class='ident'>TaskQueue</span>) <span class='op'>-&gt;</span> <span class='kw'>Self</span> {
+        <span class='ident'>TaskQueueStats</span> {
+            <span class='ident'>threads_count</span>: <span class='ident'>queue</span>.<span class='ident'>get_threads_count</span>(),
+            <span class='ident'>threads_max</span>: <span class='ident'>queue</span>.<span class='ident'>get_threads_max</span>(),
+            <span class='ident'>threads_min</span>: <span class='ident'>queue</span>.<span class='ident'>get_threads_min</span>(),
+            <span class='ident'>tasks_count</span>: <span class='ident'>queue</span>.<span class='ident'>tasks_count</span>(),
+        }
+    }
+
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>empty</span>() <span class='op'>-&gt;</span> <span class='kw'>Self</span> {
+        <span class='ident'>TaskQueueStats</span> {
+            <span class='ident'>threads_count</span>: <span class='number'>0</span>,
+            <span class='ident'>threads_max</span>: <span class='number'>0</span>,
+            <span class='ident'>threads_min</span>: <span class='number'>0</span>,
+            <span class='ident'>tasks_count</span>: <span class='number'>0</span>
+        }
     }
 }
 </pre>
@@ -712,7 +818,7 @@
 
                 <p>
                     Search functions by type signature (e.g.
-                    <code>vec -> usize</code>)
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
                 </p>
             </div>
         </div>
@@ -721,13 +827,13 @@
     
 
     <script>
-        window.rootPath = "../../";
+        window.rootPath = "../../../";
         window.currentCrate = "task_queue";
         window.playgroundUrl = "";
     </script>
-    <script src="../../jquery.js"></script>
-    <script src="../../main.js"></script>
+    <script src="../../../jquery.js"></script>
+    <script src="../../../main.js"></script>
     
-    <script defer src="../../search-index.js"></script>
+    <script defer src="../../../search-index.js"></script>
 </body>
 </html>

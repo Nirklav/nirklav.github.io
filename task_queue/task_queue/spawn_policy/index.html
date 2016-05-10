@@ -46,7 +46,7 @@
             <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                 [<span class='inner'>&#x2212;</span>]
             </a>
-        </span><a id='src-37' class='srclink' href='../../src/task_queue/spawn_policy.rs.html#1-25' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-37' class='srclink' href='../../src/task_queue/src/spawn_policy.rs.html#1-227' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'><p>Trait that controls the number of threads.</p>
 
 <p>The queue is trying to change the number of threads only when new tasks come into it.
@@ -54,10 +54,18 @@ In the TaskQueue::enqueue method.</p>
 </div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
 <table>
                     <tr class=' module-item'>
+                        <td><a class='struct' href='struct.DynamicSpawnPolicy.html'
+                               title='task_queue::spawn_policy::DynamicSpawnPolicy'>DynamicSpawnPolicy</a></td>
+                        <td class='docblock short'>
+                             <p>Policy that provide dynamic number of threads for queue.</p>
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
                         <td><a class='struct' href='struct.StaticSpawnPolicy.html'
                                title='task_queue::spawn_policy::StaticSpawnPolicy'>StaticSpawnPolicy</a></td>
                         <td class='docblock short'>
-                             
+                             <p>Policy that provide max number of threads for queue.</p>
                         </td>
                     </tr>
                 </table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
@@ -112,7 +120,7 @@ In the TaskQueue::enqueue method.</p>
 
                 <p>
                     Search functions by type signature (e.g.
-                    <code>vec -> usize</code>)
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
                 </p>
             </div>
         </div>
