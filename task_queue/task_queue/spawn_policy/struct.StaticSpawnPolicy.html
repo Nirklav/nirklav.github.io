@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../main.css">
+    
 
     
     
@@ -43,10 +44,10 @@
 
     <section id='main' class="content struct">
 <h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>task_queue</a>::<wbr><a href='index.html'>spawn_policy</a>::<wbr><a class='struct' href=''>StaticSpawnPolicy</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
-                [<span class='inner'>&#x2212;</span>]
-            </a>
-        </span><a id='src-47' class='srclink' href='../../src/task_queue/src/spawn_policy.rs.html#25' title='goto source code'>[src]</a></span></h1>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-49' class='srclink' href='../../src/task_queue/src/spawn_policy.rs.html#27' title='goto source code'>[src]</a></span></h1>
 <pre class='rust struct'>pub struct StaticSpawnPolicy;</pre><div class='docblock'><p>Policy that provide max number of threads for queue.</p>
 
 <h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
@@ -58,7 +59,7 @@
 <span class='ident'>queue</span>.<span class='ident'>set_spawn_policy</span>(<span class='ident'>boxed_policy</span>);</pre>
 </div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../task_queue/spawn_policy/struct.StaticSpawnPolicy.html' title='task_queue::spawn_policy::StaticSpawnPolicy'>StaticSpawnPolicy</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>() -&gt; Self</code></h4>
 <div class='docblock'><p>Create policy that provide max number of threads for queue.</p>
-</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl <a class='trait' href='../../task_queue/spawn_policy/trait.SpawnPolicy.html' title='task_queue::spawn_policy::SpawnPolicy'>SpawnPolicy</a> for <a class='struct' href='../../task_queue/spawn_policy/struct.StaticSpawnPolicy.html' title='task_queue::spawn_policy::StaticSpawnPolicy'>StaticSpawnPolicy</a></code></h3><div class='impl-items'><h4 id='method.get_count' class='method'><code>fn <a href='../../task_queue/spawn_policy/trait.SpawnPolicy.html#method.get_count' class='fnname'>get_count</a>(&amp;mut self, stats: <a class='struct' href='../../task_queue/struct.TaskQueueStats.html' title='task_queue::TaskQueueStats'>TaskQueueStats</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl <a class='trait' href='../../task_queue/spawn_policy/trait.SpawnPolicy.html' title='task_queue::spawn_policy::SpawnPolicy'>SpawnPolicy</a> for <a class='struct' href='../../task_queue/spawn_policy/struct.StaticSpawnPolicy.html' title='task_queue::spawn_policy::StaticSpawnPolicy'>StaticSpawnPolicy</a></code></h3><div class='impl-items'><h4 id='method.get_count' class='method'><code>fn <a href='../../task_queue/spawn_policy/trait.SpawnPolicy.html#tymethod.get_count' class='fnname'>get_count</a>(&amp;mut self, stats: <a class='struct' href='../../task_queue/struct.TaskQueueStats.html' title='task_queue::TaskQueueStats'>TaskQueueStats</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
 </div></section>
     <section id='search' class="content hidden"></section>
 

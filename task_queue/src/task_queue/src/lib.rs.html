@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../rustdoc.css">
     <link rel="stylesheet" type="text/css" href="../../../main.css">
+    
 
     
     
@@ -407,6 +408,45 @@
 <span id="364">364</span>
 <span id="365">365</span>
 <span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! Task queue</span>
 <span class='doccomment'>//! The implementation of the thread pool for Rust.</span>
@@ -450,7 +490,12 @@
 <span class='kw'>pub</span> <span class='kw'>mod</span> <span class='ident'>spawn_policy</span>;
 <span class='kw'>mod</span> <span class='ident'>pipe</span>;
 
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ops</span>::<span class='ident'>Index</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>thread</span>::{ <span class='ident'>JoinHandle</span>, <span class='ident'>Builder</span> };
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>panic</span>;
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>panic</span>:: { <span class='ident'>RefUnwindSafe</span> };
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>atomic</span>::{ <span class='ident'>AtomicBool</span>, <span class='ident'>Ordering</span> };
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>Arc</span>;
 
 <span class='kw'>use</span> <span class='ident'>error</span>::<span class='ident'>TaskQueueError</span>;
 <span class='kw'>use</span> <span class='ident'>pipe</span>::<span class='ident'>Sender</span>;
@@ -468,6 +513,7 @@
     <span class='ident'>max_threads</span>: <span class='ident'>usize</span>,
 
     <span class='ident'>threads</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>ThreadInfo</span><span class='op'>&gt;</span>,
+    <span class='ident'>closing_threads</span>: <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>ThreadInfo</span><span class='op'>&gt;</span>,
     <span class='ident'>last_thread_id</span>: <span class='ident'>i64</span>
 }
 
@@ -503,6 +549,7 @@
             <span class='ident'>min_threads</span>: <span class='ident'>min</span>,
             <span class='ident'>max_threads</span>: <span class='ident'>max</span>,
             <span class='ident'>threads</span>: <span class='ident'>Vec</span>::<span class='ident'>new</span>(),
+            <span class='ident'>closing_threads</span>: <span class='ident'>Vec</span>::<span class='ident'>new</span>(),
             <span class='ident'>last_thread_id</span>: <span class='number'>0</span>
         }
     }
@@ -524,25 +571,26 @@
     <span class='doccomment'>/// # Panics</span>
     <span class='doccomment'>/// If spawn policy returned illegal number of threads.</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>enqueue</span><span class='op'>&lt;</span><span class='ident'>F</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>f</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>(), <span class='ident'>TaskQueueError</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>F</span>: <span class='ident'>Fn</span>() <span class='op'>+</span> <span class='ident'>Send</span> <span class='op'>+</span> <span class='lifetime'>&#39;static</span>, {
+        <span class='comment'>// Put task</span>
         <span class='kw'>let</span> <span class='ident'>task</span> <span class='op'>=</span> <span class='ident'>Task</span> { <span class='ident'>value</span>: <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>f</span>) };
         <span class='self'>self</span>.<span class='ident'>sender</span>.<span class='ident'>put</span>(<span class='ident'>Message</span>::<span class='ident'>Task</span>(<span class='ident'>task</span>));
 
+        <span class='comment'>// Get threads count from policy</span>
         <span class='kw'>let</span> <span class='ident'>stats</span> <span class='op'>=</span> <span class='ident'>TaskQueueStats</span>::<span class='ident'>new</span>(<span class='self'>self</span>);
         <span class='kw'>let</span> <span class='ident'>count</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>policy</span>.<span class='ident'>get_count</span>(<span class='ident'>stats</span>);
         <span class='kw'>if</span> <span class='self'>self</span>.<span class='ident'>min_threads</span> <span class='op'>&gt;</span> <span class='ident'>count</span> <span class='op'>||</span> <span class='ident'>count</span> <span class='op'>&gt;</span> <span class='self'>self</span>.<span class='ident'>max_threads</span> {
             <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;policy returned illegal number of threads min:{} max:{} count:{}&quot;</span>, <span class='self'>self</span>.<span class='ident'>min_threads</span>, <span class='self'>self</span>.<span class='ident'>max_threads</span>, <span class='ident'>count</span>);
         }
 
+        <span class='comment'>// Apply threads count if need</span>
         <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>runned</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>threads</span>.<span class='ident'>len</span>();
-
-        <span class='kw'>loop</span> {
-            <span class='kw'>if</span> <span class='ident'>runned</span> <span class='op'>==</span> <span class='ident'>count</span> {
-                <span class='kw'>break</span>;
-            }
-
+        <span class='kw'>while</span> <span class='ident'>runned</span> <span class='op'>!=</span> <span class='ident'>count</span> {
             <span class='kw'>if</span> <span class='ident'>runned</span> <span class='op'>&gt;</span> <span class='ident'>count</span> {
                 <span class='kw'>let</span> <span class='ident'>info</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>threads</span>.<span class='ident'>remove</span>(<span class='number'>0</span>);
-                <span class='self'>self</span>.<span class='ident'>sender</span>.<span class='ident'>put_with_priority</span>(<span class='prelude-val'>Some</span>(<span class='ident'>info</span>.<span class='ident'>reciver</span>), <span class='ident'>Priority</span>::<span class='ident'>High</span>, <span class='ident'>Message</span>::<span class='ident'>CloseThread</span>);
+                <span class='kw'>let</span> <span class='ident'>reciver</span> <span class='op'>=</span> <span class='ident'>info</span>.<span class='ident'>reciver</span>.<span class='ident'>clone</span>();
+
+                <span class='self'>self</span>.<span class='ident'>closing_threads</span>.<span class='ident'>push</span>(<span class='ident'>info</span>);
+                <span class='self'>self</span>.<span class='ident'>sender</span>.<span class='ident'>put_with_priority</span>(<span class='prelude-val'>Some</span>(<span class='ident'>reciver</span>), <span class='ident'>Priority</span>::<span class='ident'>High</span>, <span class='ident'>Message</span>::<span class='ident'>CloseThread</span>);
 
                 <span class='ident'>runned</span> <span class='op'>-=</span> <span class='number'>1</span>;
             } <span class='kw'>else</span> {
@@ -553,6 +601,20 @@
             }
         }
 
+        <span class='comment'>// Check removed threads</span>
+        <span class='kw'>for</span> <span class='ident'>i</span> <span class='kw'>in</span> (<span class='number'>0</span>..<span class='self'>self</span>.<span class='ident'>closing_threads</span>.<span class='ident'>len</span>()).<span class='ident'>rev</span>() {
+            <span class='kw'>let</span> <span class='ident'>is_thread_closed</span>: <span class='ident'>bool</span>;
+            {
+                <span class='kw'>let</span> <span class='ident'>info</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>closing_threads</span>.<span class='ident'>index</span>(<span class='ident'>i</span>);
+                <span class='ident'>is_thread_closed</span> <span class='op'>=</span> <span class='ident'>info</span>.<span class='ident'>closed</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>SeqCst</span>);
+            }
+
+            <span class='kw'>if</span> <span class='ident'>is_thread_closed</span> {
+                <span class='self'>self</span>.<span class='ident'>closing_threads</span>.<span class='ident'>remove</span>(<span class='ident'>i</span>);
+            }
+        }
+
+        <span class='comment'>// Result</span>
         <span class='prelude-val'>Ok</span>(())
     }
 
@@ -562,20 +624,27 @@
         <span class='kw'>let</span> <span class='ident'>name</span> <span class='op'>=</span> <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;TaskQueue::thread {}&quot;</span>, <span class='self'>self</span>.<span class='ident'>last_thread_id</span>);
         <span class='kw'>let</span> <span class='ident'>reciver</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>sender</span>.<span class='ident'>create_reciver</span>();
         <span class='kw'>let</span> <span class='ident'>reciver_handle</span> <span class='op'>=</span> <span class='ident'>reciver</span>.<span class='ident'>handle</span>();
+        <span class='kw'>let</span> <span class='ident'>close_flag</span> <span class='op'>=</span> <span class='ident'>Arc</span>::<span class='ident'>new</span>(<span class='ident'>AtomicBool</span>::<span class='ident'>new</span>(<span class='boolval'>false</span>));
+        <span class='kw'>let</span> <span class='ident'>close_flag_clone</span> <span class='op'>=</span> <span class='ident'>close_flag</span>.<span class='ident'>clone</span>();
 
         <span class='kw'>let</span> <span class='ident'>handle</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>Builder</span>::<span class='ident'>new</span>()
             .<span class='ident'>name</span>(<span class='ident'>name</span>)
-            .<span class='ident'>spawn</span>(<span class='kw'>move</span> <span class='op'>||</span> <span class='ident'>TaskQueue</span>::<span class='ident'>thread_update</span>(<span class='ident'>reciver</span>)));
+            .<span class='ident'>spawn</span>(<span class='kw'>move</span> <span class='op'>||</span> <span class='ident'>Self</span>::<span class='ident'>thread_update</span>(<span class='ident'>close_flag_clone</span>, <span class='ident'>reciver</span>)));
 
-        <span class='prelude-val'>Ok</span>(<span class='ident'>ThreadInfo</span>::<span class='ident'>new</span>(<span class='ident'>reciver_handle</span>, <span class='ident'>handle</span>))
+        <span class='prelude-val'>Ok</span>(<span class='ident'>ThreadInfo</span>::<span class='ident'>new</span>(<span class='ident'>reciver_handle</span>, <span class='ident'>handle</span>, <span class='ident'>close_flag</span>))
     }
 
-    <span class='kw'>fn</span> <span class='ident'>thread_update</span>(<span class='ident'>reciver</span>: <span class='ident'>Reciver</span><span class='op'>&lt;</span><span class='ident'>Message</span><span class='op'>&gt;</span>) {
+    <span class='kw'>fn</span> <span class='ident'>thread_update</span>(<span class='ident'>close_flag</span>: <span class='ident'>Arc</span><span class='op'>&lt;</span><span class='ident'>AtomicBool</span><span class='op'>&gt;</span>, <span class='ident'>reciver</span>: <span class='ident'>Reciver</span><span class='op'>&lt;</span><span class='ident'>Message</span><span class='op'>&gt;</span>) {
         <span class='kw'>loop</span> {
             <span class='kw'>let</span> <span class='ident'>message</span> <span class='op'>=</span> <span class='ident'>reciver</span>.<span class='ident'>get</span>();
             <span class='kw'>match</span> <span class='ident'>message</span> {
-                <span class='ident'>Message</span>::<span class='ident'>Task</span>(<span class='ident'>t</span>) <span class='op'>=&gt;</span> <span class='ident'>t</span>.<span class='ident'>run</span>(),
-                <span class='ident'>Message</span>::<span class='ident'>CloseThread</span> <span class='op'>=&gt;</span> <span class='kw'>return</span>,
+                <span class='ident'>Message</span>::<span class='ident'>Task</span>(<span class='ident'>t</span>) <span class='op'>=&gt;</span> {
+                    <span class='kw'>let</span> _ <span class='op'>=</span> <span class='ident'>panic</span>::<span class='ident'>catch_unwind</span>(<span class='op'>||</span> <span class='ident'>t</span>.<span class='ident'>run</span>());
+                },
+                <span class='ident'>Message</span>::<span class='ident'>CloseThread</span> <span class='op'>=&gt;</span> {
+                    <span class='ident'>close_flag</span>.<span class='ident'>store</span>(<span class='boolval'>true</span>, <span class='ident'>Ordering</span>::<span class='ident'>SeqCst</span>);
+                    <span class='kw'>return</span>;
+                }
             }
         }
     }
@@ -629,13 +698,14 @@
     }
 
     <span class='kw'>fn</span> <span class='ident'>stop_impl</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>JoinHandle</span><span class='op'>&lt;</span>()<span class='op'>&gt;&gt;</span> {
-        <span class='comment'>// Close threads only after all tasks</span>
+        <span class='comment'>// Close threads only after all tasks (send message with min priority)</span>
         <span class='kw'>for</span> <span class='ident'>info</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>threads</span> {
             <span class='self'>self</span>.<span class='ident'>sender</span>.<span class='ident'>put_with_priority</span>(<span class='prelude-val'>Some</span>(<span class='ident'>info</span>.<span class='ident'>reciver</span>), <span class='ident'>Priority</span>::<span class='ident'>Min</span>, <span class='ident'>Message</span>::<span class='ident'>CloseThread</span>);
         }
 
         <span class='self'>self</span>.<span class='ident'>threads</span>
             .<span class='ident'>drain</span>(..)
+            .<span class='ident'>chain</span>(<span class='self'>self</span>.<span class='ident'>closing_threads</span>.<span class='ident'>drain</span>(..))
             .<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>t</span><span class='op'>|</span> <span class='ident'>t</span>.<span class='ident'>handle</span>)
             .<span class='ident'>collect</span>()
     }
@@ -658,12 +728,15 @@
     <span class='doccomment'>/// }</span>
     <span class='doccomment'>/// ```</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>stop_immediately</span>(<span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>Task</span><span class='op'>&gt;</span> {
-        <span class='kw'>let</span> <span class='ident'>threads</span> : <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>ThreadInfo</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>threads</span>.<span class='ident'>drain</span>(..).<span class='ident'>collect</span>();
-
-        <span class='comment'>// Close threads immediately</span>
-        <span class='kw'>for</span> <span class='ident'>info</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='ident'>threads</span> {
+        <span class='comment'>// Close threads immediately (send message with high priority)</span>
+        <span class='kw'>for</span> <span class='ident'>info</span> <span class='kw'>in</span> <span class='kw-2'>&amp;</span><span class='self'>self</span>.<span class='ident'>threads</span> {
             <span class='self'>self</span>.<span class='ident'>sender</span>.<span class='ident'>put_with_priority</span>(<span class='prelude-val'>Some</span>(<span class='ident'>info</span>.<span class='ident'>reciver</span>), <span class='ident'>Priority</span>::<span class='ident'>High</span>, <span class='ident'>Message</span>::<span class='ident'>CloseThread</span>);
         }
+
+        <span class='kw'>let</span> <span class='ident'>threads</span> : <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>ThreadInfo</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>threads</span>
+            .<span class='ident'>drain</span>(..)
+            .<span class='ident'>chain</span>(<span class='self'>self</span>.<span class='ident'>closing_threads</span>.<span class='ident'>drain</span>(..))
+            .<span class='ident'>collect</span>();
 
         <span class='comment'>// Wait threads</span>
         <span class='kw'>for</span> <span class='ident'>info</span> <span class='kw'>in</span> <span class='ident'>threads</span> {
@@ -721,13 +794,15 @@
 <span class='kw'>struct</span> <span class='ident'>ThreadInfo</span> {
     <span class='ident'>reciver</span>: <span class='ident'>ReciverHandle</span>,
     <span class='ident'>handle</span>: <span class='ident'>JoinHandle</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span>,
+    <span class='ident'>closed</span>: <span class='ident'>Arc</span><span class='op'>&lt;</span><span class='ident'>AtomicBool</span><span class='op'>&gt;</span>
 }
 
 <span class='kw'>impl</span> <span class='ident'>ThreadInfo</span> {
-    <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>reciver</span>: <span class='ident'>ReciverHandle</span>, <span class='ident'>handle</span>: <span class='ident'>JoinHandle</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>ThreadInfo</span> {
+    <span class='kw'>fn</span> <span class='ident'>new</span>(<span class='ident'>reciver</span>: <span class='ident'>ReciverHandle</span>, <span class='ident'>handle</span>: <span class='ident'>JoinHandle</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span>, <span class='ident'>close_flag</span>: <span class='ident'>Arc</span><span class='op'>&lt;</span><span class='ident'>AtomicBool</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='kw'>Self</span> {
         <span class='ident'>ThreadInfo</span> {
             <span class='ident'>reciver</span>: <span class='ident'>reciver</span>,
-            <span class='ident'>handle</span>: <span class='ident'>handle</span>
+            <span class='ident'>handle</span>: <span class='ident'>handle</span>,
+            <span class='ident'>closed</span>: <span class='ident'>close_flag</span>
         }
     }
 }
@@ -738,13 +813,17 @@
 }
 
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Task</span> {
-    <span class='ident'>value</span>: <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>Fn</span>() <span class='op'>+</span> <span class='ident'>Send</span> <span class='op'>+</span> <span class='lifetime'>&#39;static</span><span class='op'>&gt;</span>,
+    <span class='ident'>value</span>: <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>Fn</span>() <span class='op'>+</span> <span class='ident'>Send</span><span class='op'>&gt;</span>,
 }
 
 <span class='kw'>impl</span> <span class='ident'>Task</span> {
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>run</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) {
         (<span class='self'>self</span>.<span class='ident'>value</span>)();
     }
+}
+
+<span class='kw'>impl</span> <span class='ident'>RefUnwindSafe</span> <span class='kw'>for</span> <span class='ident'>Task</span> {
+
 }
 
 <span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Clone</span>, <span class='ident'>Copy</span>)]</span>
